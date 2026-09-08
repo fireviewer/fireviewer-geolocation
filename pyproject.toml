@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fireviewer-geolocation"
+version = "0.1.0"
+description = "Geographic hypotheses, retrieval, perspective and registration."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "AGPL-3.0-or-later"
+dependencies = [
+  "fireviewer-contracts==0.1.0",
+  "httpx==0.28.1",
+  "numpy==2.4.6",
+  "pyproj==3.7.2",
+  "Pillow==12.3.0"
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.0.3", "ruff==0.15.21", "jsonschema==4.26.0"]
+"localization-mvp" = [
+  "faiss-cpu==1.15.0",
+  "httpx==0.28.1",
+  "numpy==2.4.6",
+  "pillow==12.3.0",
+  "safetensors==0.8.0",
+  "torch==2.13.0",
+  "torchvision==0.28.0",
+  "tzdata>=2025.2; sys_platform == 'win32'"
+]
+"roma-registration" = [
+  "einops==0.8.2",
+  "kornia==0.8.3",
+  "numpy==2.4.6",
+  "opencv-python-headless==4.13.0.92",
+  "psutil==7.2.2",
+  "pycolmap==4.1.1",
+  "pyproj==3.7.2"
+]
+"azure-maps" = [
+  "azure-identity==1.25.3",
+  "httpx==0.28.1"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml", "*.txt", "*.md", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[project.scripts]
+fireviewer-geolocation = "fireviewer_geolocation.mvp.localization.geographic_cpu_service:main"
