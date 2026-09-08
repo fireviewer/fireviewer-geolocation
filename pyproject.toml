@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest==9.0.3", "ruff==0.15.21", "jsonschema==4.26.0"]
+dev = ["opencv-python-headless==4.13.0.92", "pytest==9.0.3", "ruff==0.15.21", "jsonschema==4.26.0"]
 "localization-mvp" = [
   "faiss-cpu==1.15.0",
   "httpx==0.28.1",
