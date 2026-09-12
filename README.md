@@ -1,15 +1,17 @@
 # fireviewer-geolocation
 
+> **Source active FV · private.** Hypothèses géographiques, Panoramax, retrieval et registration. Voir [où travailler, quoi commiter et comment reprendre](ORGANISATION.md).
+
 Geographic hypotheses, retrieval, perspective and registration.
 
-Python package: `fireviewer_geolocation`. Version: `0.1.0`.
+Python package: `fireviewer_geolocation`. Version: `0.1.1`.
 
 ## Installation
 
 Install the versioned release wheels (including private FireViewer dependencies) from the release bundle. No sibling source checkout is required.
 
 ```sh
-python -m pip install --find-links /path/to/release/wheels fireviewer-geolocation==0.1.0
+python -m pip install --find-links /path/to/release/wheels fireviewer-geolocation==0.1.1
 python -m pytest tests -q
 ```
 
