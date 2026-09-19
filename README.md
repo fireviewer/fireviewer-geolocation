@@ -1,5 +1,17 @@
 # fireviewer-geolocation
 
+## Repères documentaires — 19 septembre 2026
+
+- **Rôle :** Production d’hypothèses géographiques par retrieval, perspective, registration, Panoramax et autres références.
+- **Statut :** Actif — package v0.1.1.
+- **Entrées :** Observations visuelles, position/caméra si disponible, terrain, orthophoto, références géographiques.
+- **Sorties :** Candidats géographiques, transformations, confiance/incertitude et preuves associées.
+- **Limites :** Toujours fournir un niveau de confiance ou s’abstenir. Ne pas inventer une précision absente des données. Position caméra et position du phénomène sont distinctes.
+
+[Fiche du dépôt](https://github.com/fireviewer/Fireviewer_doc/blob/main/docs/public/repositories/fireviewer-geolocation.md) · [Architecture](https://github.com/fireviewer/Fireviewer_doc/blob/main/docs/public/ARCHITECTURE.md) · [Statuts et vocabulaire](https://github.com/fireviewer/Fireviewer_doc/blob/main/docs/public/STATUTS_ET_VOCABULAIRE.md).
+
+Cette revue documentaire ne renouvelle aucun test ni aucune réception. Les procédures, versions et preuves techniques ci-dessous conservent leur périmètre et leur date.
+
 > **Source active FV · private.** Hypothèses géographiques, Panoramax, retrieval et registration. Voir [où travailler, quoi commiter et comment reprendre](ORGANISATION.md).
 
 Geographic hypotheses, retrieval, perspective and registration.
