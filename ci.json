@@ -8,7 +8,11 @@
       "asset": "fireviewer_contracts-0.1.1-py3-none-any.whl",
       "sha256": "6e50fa64c1f062dfc256c88f1c8c1b2307e0960ebbed1d47a5755708087ccb51",
       "upstream_repository": "fireviewer/fireviewer-contracts",
-      "attribution": "Original licence and author notices inside artifact"
+      "attribution": "Original licence and author notices inside artifact",
+      "source_commit": "d2be4ba408812286a30c9c6207d29ef00bd25ced",
+      "source_asset": "fireviewer_contracts-0.1.2-py3-none-any.whl",
+      "previous_requirement": "fireviewer-contracts==0.1.1",
+      "source_requirement": "fireviewer-contracts==0.1.2"
     }
   ],
   "tests": [
