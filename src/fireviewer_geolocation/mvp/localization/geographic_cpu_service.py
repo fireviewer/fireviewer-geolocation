@@ -8,7 +8,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Protocol
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 
 from fireviewer_contracts.contracts import SafeIdentifierV2, StrictModel
 from fireviewer_geolocation.mvp.localization.azure_maps import (
@@ -62,12 +62,22 @@ class GeographicCpuSettings(StrictModel):
     port: int = Field(default=8080, ge=1, le=65_535)
     worker_token: SecretStr = Field(min_length=32, max_length=4_096)
     backend: AzureBackendEventEvidenceConfig
-    azure_maps_enabled: bool = True
-    azure_maps_account_client_id: str = Field(min_length=36, max_length=36)
-    managed_identity_client_id: str = Field(min_length=36, max_length=36)
+    azure_maps_enabled: bool = False
+    azure_maps_account_client_id: str | None = Field(default=None, min_length=36, max_length=36)
+    managed_identity_client_id: str | None = Field(default=None, min_length=36, max_length=36)
+
+    @model_validator(mode="after")
+    def require_azure_maps_identity_when_enabled(self) -> GeographicCpuSettings:
+        if self.azure_maps_enabled and (
+            self.azure_maps_account_client_id is None
+            or self.managed_identity_client_id is None
+        ):
+            raise ValueError("Azure Maps identity is required only when Azure Maps is enabled")
+        return self
 
     @classmethod
     def from_env(cls) -> GeographicCpuSettings:
+        azure_maps_enabled = _env_bool("FIREVIEWER_AZURE_MAPS_ENABLED", False)
         return cls(
             host=os.getenv("FIREVIEWER_GEO_WORKER_HOST", "0.0.0.0"),  # noqa: S104
             port=int(os.getenv("PORT", "8080")),
@@ -77,9 +87,15 @@ class GeographicCpuSettings(StrictModel):
                 bearer_token=SecretStr(os.environ["FIREVIEWER_BACKEND_TOKEN"]),
                 timeout_seconds=float(os.getenv("FIREVIEWER_BACKEND_TIMEOUT_SECONDS", "30")),
             ),
-            azure_maps_enabled=_env_bool("FIREVIEWER_AZURE_MAPS_ENABLED", True),
-            azure_maps_account_client_id=os.environ["FIREVIEWER_AZURE_MAPS_ACCOUNT_CLIENT_ID"],
-            managed_identity_client_id=os.environ["AZURE_CLIENT_ID"],
+            azure_maps_enabled=azure_maps_enabled,
+            azure_maps_account_client_id=(
+                os.getenv("FIREVIEWER_AZURE_MAPS_ACCOUNT_CLIENT_ID")
+                if azure_maps_enabled
+                else None
+            ),
+            managed_identity_client_id=(
+                os.getenv("AZURE_CLIENT_ID") if azure_maps_enabled else None
+            ),
         )
 
 
@@ -195,22 +211,25 @@ class GeographicCpuService:
         self.settings = settings
         if runner is None:
             repository = AzureBackendEventEvidenceAdapter(settings.backend)
+            azure_maps = None
+            if settings.azure_maps_enabled:
+                account_client_id = settings.azure_maps_account_client_id
+                managed_identity_client_id = settings.managed_identity_client_id
+                if account_client_id is None or managed_identity_client_id is None:
+                    raise ValueError("Azure Maps identity is required when enabled")
+                azure_maps = AzureMapsGeoEnrichmentProvider(
+                    config=AzureMapsConfig(
+                        account_client_id=account_client_id,
+                        managed_identity_client_id=managed_identity_client_id,
+                    )
+                )
             runner = GeographicCpuRunner(
                 repository=repository,
                 geographic_service=DurableGeographicHypothesisService(
                     repository,
                     terrain_resolver=AzureBackendTerrainResolver(settings.backend),
                 ),
-                azure_maps=(
-                    AzureMapsGeoEnrichmentProvider(
-                        config=AzureMapsConfig(
-                            account_client_id=settings.azure_maps_account_client_id,
-                            managed_identity_client_id=settings.managed_identity_client_id,
-                        )
-                    )
-                    if settings.azure_maps_enabled
-                    else None
-                ),
+                azure_maps=azure_maps,
                 publisher=BackendGeographicEvidencePublisher(settings.backend),
             )
         self.runner = runner

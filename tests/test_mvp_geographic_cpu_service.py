@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import SecretStr
+import pytest
+from pydantic import SecretStr, ValidationError
 
 from fireviewer_contracts.mvp.contracts import EventEvidenceV1
 from fireviewer_geolocation.mvp.localization.geographic_cpu_service import (
@@ -63,9 +64,34 @@ def _settings() -> GeographicCpuSettings:
             base_url="https://api.example.test",
             bearer_token=SecretStr("b" * 32),
         ),
-        azure_maps_account_client_id="11111111-1111-4111-8111-111111111111",
-        managed_identity_client_id="22222222-2222-4222-8222-222222222222",
     )
+
+
+def test_settings_start_without_azure_maps_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FIREVIEWER_GEO_WORKER_TOKEN", "w" * 32)
+    monkeypatch.setenv("FIREVIEWER_BACKEND_BASE_URL", "https://api.example.test")
+    monkeypatch.setenv("FIREVIEWER_BACKEND_TOKEN", "b" * 32)
+    monkeypatch.delenv("FIREVIEWER_AZURE_MAPS_ENABLED", raising=False)
+    monkeypatch.delenv("FIREVIEWER_AZURE_MAPS_ACCOUNT_CLIENT_ID", raising=False)
+    monkeypatch.delenv("AZURE_CLIENT_ID", raising=False)
+
+    settings = GeographicCpuSettings.from_env()
+    assert settings.azure_maps_enabled is False
+    assert settings.azure_maps_account_client_id is None
+    assert settings.managed_identity_client_id is None
+    GeographicCpuService(settings=settings)
+
+
+def test_enabling_azure_maps_requires_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FIREVIEWER_GEO_WORKER_TOKEN", "w" * 32)
+    monkeypatch.setenv("FIREVIEWER_BACKEND_BASE_URL", "https://api.example.test")
+    monkeypatch.setenv("FIREVIEWER_BACKEND_TOKEN", "b" * 32)
+    monkeypatch.setenv("FIREVIEWER_AZURE_MAPS_ENABLED", "true")
+    monkeypatch.delenv("FIREVIEWER_AZURE_MAPS_ACCOUNT_CLIENT_ID", raising=False)
+    monkeypatch.delenv("AZURE_CLIENT_ID", raising=False)
+
+    with pytest.raises(ValidationError, match="Azure Maps identity is required"):
+        GeographicCpuSettings.from_env()
 
 
 def test_planner_accepts_only_explicitly_sourced_location_claims() -> None:
