@@ -70,3 +70,13 @@ https://github.com/fireviewer/fireviewer-jev-experiments
 ## Migration par révisions d’incident
 
 La version candidate 0.1.2 aligne les dépendances sur les contrats 0.1.3. Les algorithmes et modèles de ce composant ne changent pas. Les wheels requis sont versionnés dans `vendor/`, vérifiés par SHA-256 dans `ci.json` et utilisés par `python tools/ci.py verify` sans dépôt voisin. Aucun modèle ou corpus n’est incorporé.
+
+## Exécution sans Azure Maps — candidat du 26 septembre 2026
+
+Le service CPU géographique désactive désormais Azure Maps par défaut.
+`FIREVIEWER_AZURE_MAPS_ENABLED` absent ou `false` ne requiert ni
+`FIREVIEWER_AZURE_MAPS_ACCOUNT_CLIENT_ID` ni `AZURE_CLIENT_ID` et ne crée
+aucun client Azure Maps. L'ancien adaptateur reste disponible seulement par
+activation explicite avec les deux identifiants requis. Cette modification
+ne qualifie pas encore un déploiement de worker ni une autre source de
+géocodage : sans donnée spatiale exploitable, le service conserve l'abstention.
